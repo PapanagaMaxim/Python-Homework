@@ -1,0 +1,47 @@
+ENGLISH:
+
+>>>>>The game still has bugs and errors since its a BETA verison<<<<<
+
+Before you run my game, please be careful, its a horror 2d game with sudden audios and jumpscares!!!
+>>>>>Use your headphones at a low volume<<<<<
+
+Open a new terminal and type: 'pip install pygame'
+After installing pygame library, you can finally enjoy my project:  The Woods (BETA)
+
+Short Tutorial
+1. Launching: Open 'Slenderman' folder, search for the 'Code' folder and finally open the 'Menu' class. Open Menu.py file
+and just run it (IMPORTANT: INSTALL THE PYGAME LIBRARY)
+
+2. In game advices: (For the Sigmoid team) I left a small gift for you in the menu section, enjoy it! (click_mouse + cake = secret)
+3. Level description: You're lost in a dark forest, but suddently you hear strange noise... Find notes on the trees around and escape
+the evil creature
+
+Keyboard: "WASD" to move, "Shift" to run, "E" to grab the notes, "ESC" to exit to the main menu.
+When you find all the notes, press ALT + F4 (trust me)
+
+Amount of notes per level:
+Level Easy: 10 notes
+Level Medium: 15 notes
+Level Hard: 15 notes 
+
+>>>>>CHEAT CODE: Press "P" on your keyboard to add 10 notes in your score. Easy win at the Easy Level, but in Level Medium and Hard you will have to find the other 5 notes...<<<<<
+
+
+Characters' speed per levels:
+
+Player:
+
+Level Easy: Normal = 10; Sprint = 20;
+Level Medium: Normal = 10; Sprint = 25;
+Level Hard: Normal = 5; Sprint = 20;
+
+Monster(???):
+
+Level Easy: 5
+Level Medium: 10
+Level Hard: 20
+
+Thanks to the Sigmoid Team for the idea, aslo Thank You for playing!
+
+
+Developed by Max :D

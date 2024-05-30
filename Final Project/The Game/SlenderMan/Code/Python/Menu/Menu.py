@@ -1,9 +1,8 @@
-#pip install numpy
-#pip install pygame
 import pygame
 import sys
 from Button import Button
 import subprocess
+import threading
 
 pygame.init()
 
@@ -19,24 +18,63 @@ SCREEN_SIZE = (SCREEN_WIDTH, SCREEN_HEIGHT)
 SCREEN = pygame.display.set_mode(SCREEN_SIZE)
 pygame.display.set_caption("Menu")
 
-# Load and scale the background image
-BG = pygame.image.load("Slenderman/Images/Menu/Background.jpg")
+# Load assets
+Logo = pygame.image.load('SlenderMan/Images/Menu/Logo.png')
+Logo = pygame.transform.scale(Logo, (150, 150))
+
+Gift_texture = pygame.image.load('SlenderMan/Images/Items/Gift.png')
+Gift_texture = pygame.transform.scale(Gift_texture, (200, 250))
+
+BG = pygame.image.load("SlenderMan/Images/Menu/Background.jpg")
 BG = pygame.transform.scale(BG, SCREEN_SIZE)
 
+pygame.mixer.init()
+music_path_1 = 'SlenderMan/Sfx/Lobby/MusicBox1.mp3'
+music_path_2 = 'SlenderMan/Sfx/Lobby/MusicBox2.mp3'
+button_sound_path = 'SlenderMan/Sfx/Lobby/ButtonClick.mp3'
+
+button_sound = pygame.mixer.Sound(button_sound_path)
+
 def get_font(size):
-    return pygame.font.Font("Slenderman/Images/Menu/font.ttf", size)
+    return pygame.font.Font("SlenderMan/Images/Menu/font.ttf", size)
 
 def toggle_screen_size():
-    global SCREEN_SIZE
+    global SCREEN_SIZE, SCREEN
 
-    # If the screen size is the same as the initial size, make it smaller
     if SCREEN_SIZE == (SCREEN_WIDTH, SCREEN_HEIGHT):
         SCREEN_SIZE = (int(SCREEN_WIDTH * 0.8), int(SCREEN_HEIGHT * 0.8))
     else:
         SCREEN_SIZE = (SCREEN_WIDTH, SCREEN_HEIGHT)
 
-    # Set the screen size
     SCREEN = pygame.display.set_mode(SCREEN_SIZE)
+
+def play_music():
+    while True:
+        pygame.mixer.music.load(music_path_1)
+        pygame.mixer.music.play()
+        while pygame.mixer.music.get_busy():
+            pygame.time.Clock().tick(10)
+        pygame.mixer.music.load(music_path_2)
+        pygame.mixer.music.play()
+        while pygame.mixer.music.get_busy():
+            pygame.time.Clock().tick(10)
+
+def handle_button_click(button, pos):
+    if button.checkForInput(pos):
+        button_sound.play()
+        pygame.time.delay(100)  # Small delay to ensure sound plays before the next action
+        return True
+    return False
+
+def handle_gift_click(pos):
+    gift_rect = Gift_texture.get_rect(topleft=(10, SCREEN_SIZE[1] - Gift_texture.get_height() - 10))
+    if gift_rect.collidepoint(pos):
+        button_sound.play()
+        pygame.time.delay(100)
+        pygame.quit()
+        subprocess.Popen(["python", "Slenderman/Code/Python/Secret/EasterEgg.py"])
+        return True
+    return False
 
 def play():
     while True:
@@ -61,26 +99,35 @@ def play():
             button.changeColor(PLAY_MOUSE_POS)
             button.update(SCREEN)
 
+        # Draw the gift image at the bottom-left corner
+        SCREEN.blit(Gift_texture, (10, SCREEN_SIZE[1] - Gift_texture.get_height() - 10))
+
+        # Draw the logo in the top right corner
+        SCREEN.blit(Logo, (SCREEN_SIZE[0] - Logo.get_width() - 10, 10))
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if EASY_BUTTON.checkForInput(PLAY_MOUSE_POS):
+                if handle_button_click(EASY_BUTTON, PLAY_MOUSE_POS):
                     pygame.quit()  # Shut down the current Pygame window
                     subprocess.Popen(["python", "SlenderMan/Code/Python/Levels/Easy/Easy.py"])
                     return  # Exit the function to prevent further updates
-                if MEDIUM_BUTTON.checkForInput(PLAY_MOUSE_POS):
+                if handle_button_click(MEDIUM_BUTTON, PLAY_MOUSE_POS):
                     pygame.quit()  # Shut down the current Pygame window
-                    subprocess.Popen(["python", "SlenderMan/Code/Python//Levels/Medium/Medium.py"])
+                    subprocess.Popen(["python", "SlenderMan/Code/Python/Levels/Medium/Medium.py"])
                     return  # Exit the function to prevent further updates
-                if HARD_BUTTON.checkForInput(PLAY_MOUSE_POS):
+                if handle_button_click(HARD_BUTTON, PLAY_MOUSE_POS):
                     pygame.quit()  # Shut down the current Pygame window
-                    subprocess.Popen(["python", "SlenderMan/Code/Python/Levels/Hard/LevelHard.py"])
+                    subprocess.Popen(["python", "SlenderMan/Code/Python/Levels/Hard/Hard.py"])
                     return  # Exit the function to prevent further updates
-                if BACK_BUTTON.checkForInput(PLAY_MOUSE_POS):
+                if handle_button_click(BACK_BUTTON, PLAY_MOUSE_POS):
+                    button_sound.play()
                     main_menu()
                     return  # Exit the function to prevent further updates
+                if handle_gift_click(PLAY_MOUSE_POS):
+                    return
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_F11:
                     toggle_screen_size()
@@ -88,6 +135,11 @@ def play():
         pygame.display.update()
 
 def main_menu():
+    # Start playing music in a separate thread when entering the main menu
+    music_thread = threading.Thread(target=play_music)
+    music_thread.daemon = True
+    music_thread.start()
+
     while True:
         # Blit the scaled background image to fill the screen
         SCREEN.blit(BG, (0, 0))
@@ -103,7 +155,7 @@ def main_menu():
 
         PLAY_BUTTON = Button(image=pygame.image.load("Slenderman/Images/Menu/Play Rect.png"), pos=(SCREEN_SIZE[0] // 2, BUTTON_Y), 
                             text_input="PLAY", font=get_font(75), base_color="#C40C0C", hovering_color="White")
-        QUIT_BUTTON = Button(image=pygame.image.load("Slenderman/Images/Menu//Quit Rect.png"), pos=(SCREEN_SIZE[0] // 2, BUTTON_Y + BUTTON_HEIGHT), 
+        QUIT_BUTTON = Button(image=pygame.image.load("Slenderman/Images/Menu/Quit Rect.png"), pos=(SCREEN_SIZE[0] // 2, BUTTON_Y + BUTTON_HEIGHT), 
                             text_input="QUIT", font=get_font(75), base_color="#C40C0C", hovering_color="White")
 
         SCREEN.blit(MENU_TEXT, MENU_RECT)
@@ -112,16 +164,24 @@ def main_menu():
             button.changeColor(MENU_MOUSE_POS)
             button.update(SCREEN)
         
+        # Draw the gift image at the bottom-left corner
+        SCREEN.blit(Gift_texture, (10, SCREEN_SIZE[1] - Gift_texture.get_height() - 10))
+
+        # Draw the logo in the top right corner
+        SCREEN.blit(Logo, (SCREEN_SIZE[0] - Logo.get_width() - 10, 10))
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if PLAY_BUTTON.checkForInput(MENU_MOUSE_POS):
+                if handle_button_click(PLAY_BUTTON, MENU_MOUSE_POS):
                     play()
-                if QUIT_BUTTON.checkForInput(MENU_MOUSE_POS):
+                if handle_button_click(QUIT_BUTTON, MENU_MOUSE_POS):
                     pygame.quit()
                     sys.exit()
+                if handle_gift_click(MENU_MOUSE_POS):
+                    return
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_F11:
                     toggle_screen_size()
@@ -129,5 +189,3 @@ def main_menu():
         pygame.display.update()
 
 main_menu()
-
-#Slenderman/Images/Player
